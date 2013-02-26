@@ -12,7 +12,6 @@ struct Address {
     int set;
     char *name;
     char *email;
-    char *location;
 };
 
 // Declare the Database struct type
@@ -34,8 +33,6 @@ struct Connection {
 };
 
 void Database_close(struct Connection *conn);
-void Database_list(struct Connection *conn);
-void Database_create(struct Connection *conn, int max_rows, int max_data);
 
 // Declare the die method
 // errno is an external variable, if it's set, just perror the message
@@ -59,8 +56,8 @@ void die(const char *message, struct Connection *conn)
 // Use struct pointer access to print the fields
 void Address_print(struct Address *addr)
 {
-    printf("%d %s %s %s\n",
-            addr->id, addr->name, addr->email, addr->location);
+    printf("%d %s %s\n",
+            addr->id, addr->name, addr->email);
 }
 
 void Database_print(struct Database *db)
@@ -70,6 +67,8 @@ void Database_print(struct Database *db)
 }
 
 // Declare the Database_load function
+void Database_list(struct Connection *conn);
+
 void Database_load(struct Connection *conn)
 {
     rewind(conn->file);
@@ -83,19 +82,23 @@ void Database_load(struct Connection *conn)
     rc = fread(&conn->db->max_data, sizeof(int), 1, conn->file);
     if (rc != 1) die("Failed to load database.", conn);
 
-    if (conn->db->rows == NULL) {
-        Database_create(conn, conn->db->max_rows, conn->db->max_data);
-    }
-
     int i = 0;
     for (i = 0; i < conn->db->max_rows; i++) {
-        struct Address *row = &conn->db->rows[i];
+        struct Address row = {.id = i, .set = 0};
+        int id = 0;
+        fread(&id, sizeof(int), 1, conn->file);
+        row.id = id;
 
-        fread(&row->id, sizeof(int), 1, conn->file);
-        fread(&row->set, sizeof(int), 1, conn->file);
-        fread(row->name, sizeof(char) * conn->db->max_data, 1, conn->file);
-        fread(row->email, sizeof(char) * conn->db->max_data, 1, conn->file);
-        fread(row->location, sizeof(char) * conn->db->max_data, 1, conn->file);
+        int set = 0;
+        fread(&set, sizeof(int), 1, conn->file);
+        row.set = set;
+
+        char *name = malloc(sizeof(char) * conn->db->max_data);
+        char *email = malloc(sizeof(char) * conn->db->max_data);
+        fread(name, sizeof(char) * conn->db->max_data, 1, conn->file);
+        fread(email, sizeof(char) * conn->db->max_data, 1, conn->file);
+        row.name = name;
+        row.email = email;
     }
 }
 
@@ -104,6 +107,7 @@ struct Connection *Database_open(const char *filename, char mode, int max_rows)
 {
     // Alloc memory for a struct Connection, store the pointer in conn
     struct Connection *conn = malloc(sizeof(struct Connection));
+    // If memory didn't allocate, bail
     if (!conn) die("Memory error", conn);
 
     conn->db = malloc(sizeof(struct Database));
@@ -112,12 +116,14 @@ struct Connection *Database_open(const char *filename, char mode, int max_rows)
     if (mode == 'c') {
         // Create new 0 length file, open for writing, positioned at BOF
         conn->file = fopen(filename, "w");
+        conn->db->rows = malloc(sizeof(struct Address) * max_rows);
         conn->db->max_rows = max_rows;
     } else {
         // Open file for reading and writing, positioned at BOF
         conn->file = fopen(filename, "r+");
 
         fread(&max_rows, sizeof(int), 1, conn->file);
+        conn->db->rows = malloc(sizeof(struct Address) * max_rows);
         conn->db->max_rows = max_rows;
 
         if (conn->file) {
@@ -145,7 +151,6 @@ void Database_close(struct Connection *conn)
             struct Address *row = &conn->db->rows[i];
             free(row->name);
             free(row->email);
-            free(row->location);
         }
 
         // Free the memory at conn->db
@@ -178,7 +183,6 @@ void Database_write(struct Connection *conn)
         fwrite(&row->set, sizeof(int), 1, conn->file);
         fwrite(row->name, sizeof(char) * conn->db->max_data, 1, conn->file);
         fwrite(row->email, sizeof(char) * conn->db->max_data, 1, conn->file);
-        fwrite(row->location, sizeof(char) * conn->db->max_data, 1, conn->file);
     }
 
     // Write buffered data to disk
@@ -192,8 +196,6 @@ void Database_create(struct Connection *conn, int max_rows, int max_data)
 {
     conn->db->max_rows = max_rows;
     conn->db->max_data = max_data;
-    conn->db->rows = malloc(sizeof(struct Address) * max_rows);
-    if (!conn->db->rows) die("Memory error", conn);
 
     int i = 0;
     for (i = 0; i < conn->db->max_rows; i++) {
@@ -202,23 +204,16 @@ void Database_create(struct Connection *conn, int max_rows, int max_data)
         struct Address addr = {.id = i, .set = 0};
         addr.name = malloc(sizeof(char) * max_data);
         addr.email = malloc(sizeof(char) * max_data);
-        addr.location = malloc(sizeof(char) * max_data);
 
-        int j = 0;
-        for (j = 0; j < max_data; j++) {
-            addr.name[i] = '\0';
-            addr.email[i] = '\0';
-            addr.location[i] = '\0';
-        }
-
+        strncpy(addr.name, "", max_data);
+        strncpy(addr.email, "", max_data);
         // then just assign it
         conn->db->rows[i] = addr;
     }
 }
 
 // Declare the Database_set function
-void Database_set(struct Connection *conn, int id,
-        const char *name, const char *email, const char *location)
+void Database_set(struct Connection *conn, int id, const char *name, const char *email)
 {
     // Getting the pointer from the Address in ->rows[id]
     struct Address *addr = &conn->db->rows[id];
@@ -227,19 +222,17 @@ void Database_set(struct Connection *conn, int id,
     addr->set = 1;
 
     // Copy name into addr->name
-    if (!name || !email || !location) die("Not all params", conn);
+    if (!name || !email) die("No name or email", conn);
 
+    addr->name = malloc(conn->db->max_data);
     char *res = strncpy(addr->name, name, conn->db->max_data);
     addr->name[conn->db->max_data - 1] = '\0';
     if (!res) die("Name copy failed", conn);
 
+    addr->email = malloc(conn->db->max_data);
     res = strncpy(addr->email, email, conn->db->max_data);
     addr->email[conn->db->max_data - 1] = '\0';
     if (!res) die("Email copy failed.", conn);
-
-    res = strncpy(addr->location, location, conn->db->max_data);
-    addr->location[conn->db->max_data - 1] = '\0';
-    if (!res) die("Location copy failed.", conn);
 }
 
 // Declare the Database_get function
@@ -259,28 +252,9 @@ void Database_get(struct Connection *conn, int id)
 // Declare the Database_delete function
 void Database_delete(struct Connection *conn, int id)
 {
-    struct Address *old = &conn->db->rows[id];
-    free(old->name);
-    free(old->email);
-    free(old->location);
-
+    // This is not actually deleting name and email, hm
+    // Maybe since they're on the stack, the pointers get freed?
     struct Address addr = {.id = id, .set = 0};
-
-    addr.name = malloc(sizeof(char) * conn->db->max_data);
-    if (!addr.name) die("Memory error", conn);
-
-    addr.email = malloc(sizeof(char) * conn->db->max_data);
-    if (!addr.email) die("Memory error", conn);
-
-    addr.location = malloc(sizeof(char) * conn->db->max_data);
-    if (!addr.location) die("Memory error", conn);
-
-    int i = 0;
-    for (i = 0; i < conn->db->max_data; i++) {
-        addr.name[i] = '\0';
-        addr.email[i] = '\0';
-    }
-
     conn->db->rows[id] = addr;
 }
 
@@ -293,29 +267,13 @@ void Database_list(struct Connection *conn)
     // Loop through all the rows in conn->db
     for (i = 0; i < conn->db->max_rows; i++) {
         struct Address *cur = &db->rows[i];
+        printf("%p %d\n", cur, cur->set);
 
         if (cur->set) {
             // If it's set, print it
             Address_print(cur);
         }
     }
-}
-
-void Database_find(struct Connection *conn, char query[])
-{
-    int i = 0;
-    for (i = 0; i < conn->db->max_rows; i++) {
-        struct Address *row = &conn->db->rows[i];
-        char *name_match = strstr(row->name, query);
-        char *email_match = strstr(row->email, query);
-        char *location_match = strstr(row->location, query);
-        if (name_match || email_match || location_match) {
-            Address_print(row);
-            return;
-        }
-    }
-
-    printf("No row found matching `%s`\n", query);
 }
 
 int main(int argc, char *argv[])
@@ -361,14 +319,14 @@ int main(int argc, char *argv[])
             break;
 
         case 's':
-            if (argc != 7) die("Need id, name, email, location to set", conn);
+            if (argc != 6) die("Need id, name, email to set", conn);
 
             if (id >= conn->db->max_rows) {
                 die("There's not that many records.", conn);
             }
 
             // Set the value at id, commit
-            Database_set(conn, id, argv[4], argv[5], argv[6]);
+            Database_set(conn, id, argv[4], argv[5]);
             Database_write(conn);
             break;
 
@@ -387,12 +345,6 @@ int main(int argc, char *argv[])
         case 'l':
             // List all addresses in db
             Database_list(conn);
-            break;
-
-        case 'f':
-            if (argc != 4) die("Need a query", conn);
-            char *query = argv[3];
-            Database_find(conn, query);
             break;
 
         default:
