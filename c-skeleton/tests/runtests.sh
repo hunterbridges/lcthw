@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 echo "Running unit tests:"
 
 for i in tests/*_tests

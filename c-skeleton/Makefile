@@ -19,7 +19,8 @@ dev: all
 
 $(TARGET): CFLAGS += -fPIC
 $(TARGET): build $(OBJECTS)
-	$(CC) $(CFLAGS) $(LINKER_FLAGS) $(OBJECTS) -o $(TARGET)
+	ar rcs $@ $(OBJECTS)
+	ranlib $@
 
 $(SO_TARGET): $(TARGET) $(OBJECTS)
 	$(CC) -shared -o $@ $(OBJECTS)
@@ -28,9 +29,11 @@ build:
 	@mkdir -p build
 	@mkdir -p bin
 
+$(TESTS): $(SO_TARGET)
+	cc $(CFLAGS) $(LIBS) -o $@ $(TEST_SRC)
+
 # The Unit Tests
 .PHONY: tests
-tests: CFLAGS += $(TARGET)
 tests: $(TESTS)
 	   sh ./tests/runtests.sh
 
