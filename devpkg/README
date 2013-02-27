@@ -1,0 +1,53 @@
+devpkg
+
+Usage
+=====
+-I  INSTALL
+    Installs package from URL
+
+    $ devpkg -I [URL]
+
+
+-L  LIST
+    List all packages that have been installed
+
+    $ devpkg -L
+
+
+-S  INIT
+    Create the package database
+
+    $ devpkg -S
+
+
+-F  FETCH
+    Download package from URL
+
+    $ devpkg -F [URL]
+
+
+-B  BUILD
+    Build package from URL
+
+    $ devpkg -B [URL]
+
+
+Additional options
+==================
+-c  CONFIG OPTS
+    Additional options to pass to ./configure
+
+    $ devpkg -c "FOO=BAR" -I [URL]
+
+
+-m  MAKE OPTS
+    Additional options to pass to make
+
+    $ devpkg -m "DEBUG=1" -I [URL]
+
+
+-i  INSTALL OPTS
+    Additional commands to pass to make
+
+    $ devpkg -i "test install" -I [URL]
+
