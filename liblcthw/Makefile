@@ -34,6 +34,7 @@ $(TESTS): $(SO_TARGET)
 
 # The Unit Tests
 .PHONY: tests
+tests: CFLAGS += $(TARGET)
 tests: $(TESTS)
 	   sh ./tests/runtests.sh
 
