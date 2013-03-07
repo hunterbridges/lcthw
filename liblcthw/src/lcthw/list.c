@@ -139,3 +139,49 @@ void *List_remove(List *list, ListNode *node)
 error:
     return result;
 }
+
+List *List_join(List *left, List *right) {
+    assert(left != NULL);
+    assert(right != NULL);
+    List *joined = List_create();
+
+    {
+        LIST_FOREACH(left, first, next, cur) {
+            List_push(joined, cur->value);
+        }
+    }
+
+    {
+        LIST_FOREACH(right, first, next, cur) {
+            List_push(joined, cur->value);
+        }
+    }
+
+    return joined;
+}
+
+void List_split(List *list, ListNode *splitter, List **left, List **right) {
+    assert(list != NULL);
+    assert(splitter != NULL);
+
+    int split = 0;
+    LIST_FOREACH(list, first, next, cur) {
+        List **target = (split == 0 ? left : right);
+        if (*target == NULL) {
+            *target = List_create();
+        }
+        List_push(*target, cur->value);
+        if (cur == splitter) split = 1;
+    }
+}
+
+List *List_copy(List *list) {
+    assert(list != NULL);
+
+    List *copied = List_create();
+    LIST_FOREACH(list, first, next, cur) {
+        List_push(copied, cur->value);
+    }
+
+    return copied;
+}

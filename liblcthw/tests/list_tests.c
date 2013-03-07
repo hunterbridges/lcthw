@@ -96,6 +96,86 @@ char *test_shift()
 }
 
 
+char *test_join() {
+    List *left = List_create();
+    List *right = List_create();
+
+    char *test4 = "test 4";
+    char *test5 = "test 5";
+    char *test6 = "test 6";
+
+    List_push(left, test1);
+    List_push(left, test2);
+    List_push(left, test3);
+
+    List_push(right, test4);
+    List_push(right, test5);
+    List_push(right, test6);
+
+    List *joined = List_join(left, right);
+    mu_assert(joined != NULL, "No joined list");
+    mu_assert(List_count(joined) == List_count(left) + List_count(right),
+            "Wrong count after join");
+    mu_assert(left->first->value == joined->first->value,
+            "Wrong first after join");
+    mu_assert(right->last->value == joined->last->value,
+            "Wrong last after join");
+
+    List_destroy(left);
+    List_destroy(right);
+    List_clear_destroy(joined);
+
+    return NULL;
+}
+
+
+char *test_split() {
+    List *to_split = List_create();
+    List_push(to_split, test1);
+    List_push(to_split, test2);
+    List_push(to_split, test3);
+
+    List *left = NULL;
+    List *right = NULL;
+
+    List_split(to_split, to_split->first, &left, &right);
+    mu_assert(left != NULL, "No left list");
+    mu_assert(right != NULL, "No right list");
+    mu_assert(List_count(left) == 1, "Wrong left count");
+    mu_assert(List_count(right) == 2, "Wrong right count");
+    mu_assert(left->first->value == to_split->first->value, "Wrong left first");
+    mu_assert(right->first->value == to_split->first->next->value,
+            "Wrong right first");
+    mu_assert(left->last == left->first, "Wrong left last");
+    mu_assert(right->last->value == to_split->last->value, "Wrong right last");
+
+    List_destroy(left);
+    List_destroy(right);
+    List_clear_destroy(to_split);
+
+    return NULL;
+}
+
+
+char *test_copy() {
+    List *to_copy = List_create();
+    List_push(to_copy, test1);
+    List_push(to_copy, test2);
+    List_push(to_copy, test3);
+
+    List *copied = List_copy(to_copy);
+    mu_assert(copied != NULL, "No copied list");
+    mu_assert(copied != to_copy, "Lists are same pointer");
+    mu_assert(copied->first != to_copy->first, "List nodes are same pointer");
+    mu_assert(copied->first->value == to_copy->first->value,
+            "List nodes have same value");
+
+    List_destroy(to_copy);
+    List_clear_destroy(copied);
+
+    return NULL;
+}
+
 
 char *all_tests() {
     mu_suite_start();
@@ -106,6 +186,9 @@ char *all_tests() {
     mu_run_test(test_remove);
     mu_run_test(test_shift);
     mu_run_test(test_destroy);
+    mu_run_test(test_join);
+    mu_run_test(test_split);
+    mu_run_test(test_copy);
 
     return NULL;
 }
