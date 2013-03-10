@@ -40,10 +40,8 @@ List *List_merge(List *left, List *right, List_compare comparator) {
             }
         } else if (left->count > 0) {
             List_join(result, left);
-            left->count = 0;
         } else if (right->count > 0) {
             List_join(result, right);
-            right->count = 0;
         }
     }
 

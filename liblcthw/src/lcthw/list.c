@@ -152,6 +152,10 @@ void List_join(List *left, List *right) {
     if (r_first) r_first->prev = l_last;
     left->last = r_last ? r_last : l_last;
     left->count += right->count;
+
+    right->first = NULL;
+    right->last = NULL;
+    right->count = 0;
 }
 
 void List_split(List *list, ListNode *splitter, List **remainder, int recount) {
