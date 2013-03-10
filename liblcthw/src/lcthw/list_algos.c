@@ -16,7 +16,7 @@ int List_bubble_sort(List *list, List_compare comparator) {
             ListNode *prev = node->prev;
             int rc = comparator(prev->value, node->value);
             if (rc > 0) {
-                List_swap(list, prev, node);
+                ListNode_swap(prev, node);
                 swapped = 1;
             }
 

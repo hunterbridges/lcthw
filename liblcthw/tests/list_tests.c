@@ -193,7 +193,7 @@ char *test_swap() {
     char *test_b = "test b";
     List_push(to_swap, test_a);
     List_push(to_swap, test_b);
-    List_swap(to_swap, to_swap->first, to_swap->last);
+    ListNode_swap(to_swap->first, to_swap->last);
     mu_assert(to_swap->first->value == "test b", "Wrong list first");
     mu_assert(to_swap->last->value == "test a", "Wrong list last");
     mu_assert(to_swap->first->next->value == "test a", "Wrong list first next");

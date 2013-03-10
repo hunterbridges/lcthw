@@ -184,8 +184,7 @@ void List_split(List *list, ListNode *splitter, List **remainder, int recount) {
     list->count -= count;
 }
 
-void List_swap(List *list, ListNode *a, ListNode *b) {
-    assert(list != NULL);
+void ListNode_swap(ListNode *a, ListNode *b) {
     assert(a != NULL);
     assert(b != NULL);
 
