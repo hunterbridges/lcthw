@@ -8,6 +8,18 @@ char *test2 = "test2 data";
 char *test3 = "test3 data";
 
 
+int count_valid(List *list) {
+    assert(list != NULL);
+    int actual = 0;
+    LIST_FOREACH(list, first, next, cur) {
+        actual++;
+    }
+    int rc = (actual == list->count);
+    if (rc == 0) debug("List: %d, Actual: %d", list->count, actual);
+    return rc;
+}
+
+
 char *test_create()
 {
     list = List_create();
@@ -22,7 +34,6 @@ char *test_destroy ()
     List_clear_destroy(list);
 
     return NULL;
-
 }
 
 
@@ -100,30 +111,43 @@ char *test_join() {
     List *left = List_create();
     List *right = List_create();
 
-    char *test4 = "test 4";
-    char *test5 = "test 5";
-    char *test6 = "test 6";
+    char *test4 = calloc(7, sizeof(char));
+    stpcpy(test4, "test 4");
+    char *test5 = calloc(7, sizeof(char));
+    stpcpy(test5, "test 5");
+    char *test6 = calloc(7, sizeof(char));
+    stpcpy(test6, "test 6");
+    char *test7 = calloc(7, sizeof(char));
+    stpcpy(test7, "test 7");
+    char *test8 = calloc(7, sizeof(char));
+    stpcpy(test8, "test 8");
+    char *test9 = calloc(7, sizeof(char));
+    stpcpy(test9, "test 9");
 
-    List_push(left, test1);
-    List_push(left, test2);
-    List_push(left, test3);
+    List_push(left, test4);
+    List_push(left, test5);
+    List_push(left, test6);
 
-    List_push(right, test4);
-    List_push(right, test5);
-    List_push(right, test6);
+    List_push(right, test7);
+    List_push(right, test8);
+    List_push(right, test9);
 
-    List *joined = List_join(left, right);
-    mu_assert(joined != NULL, "No joined list");
-    mu_assert(List_count(joined) == List_count(left) + List_count(right),
+    int check_count = List_count(left) + List_count(right);
+    ListNode *check_first = left->first;
+    ListNode *check_last = right->last;
+
+    List_join(left, right);
+    free(right);
+    right = NULL;
+
+    mu_assert(left != NULL, "No left list");
+    mu_assert(List_count(left) == check_count,
             "Wrong count after join");
-    mu_assert(left->first->value == joined->first->value,
+    mu_assert(left->first == check_first,
             "Wrong first after join");
-    mu_assert(right->last->value == joined->last->value,
+    mu_assert(left->last == check_last,
             "Wrong last after join");
-
-    List_destroy(left);
-    List_destroy(right);
-    List_clear_destroy(joined);
+    List_clear_destroy(left);
 
     return NULL;
 }
@@ -131,27 +155,49 @@ char *test_join() {
 
 char *test_split() {
     List *to_split = List_create();
-    List_push(to_split, test1);
-    List_push(to_split, test2);
-    List_push(to_split, test3);
 
-    List *left = NULL;
+    char *test4 = calloc(7, sizeof(char));
+    stpcpy(test4, "test 4");
+    char *test5 = calloc(7, sizeof(char));
+    stpcpy(test5, "test 5");
+    char *test6 = calloc(7, sizeof(char));
+    stpcpy(test6, "test 6");
+    List_push(to_split, test4);
+    List_push(to_split, test5);
+    List_push(to_split, test6);
+
     List *right = NULL;
+    ListNode *right_first = to_split->first->next;
+    ListNode *right_last = to_split->last;
 
-    List_split(to_split, to_split->first, &left, &right);
-    mu_assert(left != NULL, "No left list");
+    List_split(to_split, to_split->first, &right, 1);
     mu_assert(right != NULL, "No right list");
-    mu_assert(List_count(left) == 1, "Wrong left count");
+    mu_assert(List_count(to_split) == 1, "Wrong left count");
     mu_assert(List_count(right) == 2, "Wrong right count");
-    mu_assert(left->first->value == to_split->first->value, "Wrong left first");
-    mu_assert(right->first->value == to_split->first->next->value,
-            "Wrong right first");
-    mu_assert(left->last == left->first, "Wrong left last");
-    mu_assert(right->last->value == to_split->last->value, "Wrong right last");
+    mu_assert(count_valid(to_split), "Left count invalid");
+    mu_assert(count_valid(right), "Right count invalid");
+    mu_assert(to_split->last == to_split->first, "Wrong left last");
+    mu_assert(right->first == right_first, "Wrong right first");
+    mu_assert(right->last == right_last, "Wrong right last");
 
-    List_destroy(left);
-    List_destroy(right);
     List_clear_destroy(to_split);
+    List_clear_destroy(right);
+
+    return NULL;
+}
+
+
+char *test_swap() {
+    List *to_swap = List_create();
+    char *test_a = "test a";
+    char *test_b = "test b";
+    List_push(to_swap, test_a);
+    List_push(to_swap, test_b);
+    List_swap(to_swap, to_swap->first, to_swap->last);
+    mu_assert(to_swap->first->value == "test b", "Wrong list first");
+    mu_assert(to_swap->last->value == "test a", "Wrong list last");
+    mu_assert(to_swap->first->next->value == "test a", "Wrong list first next");
+    mu_assert(to_swap->last->prev->value == "test b", "Wrong list last prev");
 
     return NULL;
 }
@@ -159,9 +205,15 @@ char *test_split() {
 
 char *test_copy() {
     List *to_copy = List_create();
-    List_push(to_copy, test1);
-    List_push(to_copy, test2);
-    List_push(to_copy, test3);
+    char *test4 = calloc(7, sizeof(char));
+    stpcpy(test4, "test 4");
+    char *test5 = calloc(7, sizeof(char));
+    stpcpy(test5, "test 5");
+    char *test6 = calloc(7, sizeof(char));
+    stpcpy(test6, "test 6");
+    List_push(to_copy, test4);
+    List_push(to_copy, test5);
+    List_push(to_copy, test6);
 
     List *copied = List_copy(to_copy);
     mu_assert(copied != NULL, "No copied list");
@@ -169,6 +221,7 @@ char *test_copy() {
     mu_assert(copied->first != to_copy->first, "List nodes are same pointer");
     mu_assert(copied->first->value == to_copy->first->value,
             "List nodes have same value");
+    mu_assert(count_valid(copied), "List count invalid");
 
     List_destroy(to_copy);
     List_clear_destroy(copied);
@@ -188,6 +241,7 @@ char *all_tests() {
     mu_run_test(test_destroy);
     mu_run_test(test_join);
     mu_run_test(test_split);
+    mu_run_test(test_swap);
     mu_run_test(test_copy);
 
     return NULL;

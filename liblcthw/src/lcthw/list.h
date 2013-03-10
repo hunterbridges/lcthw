@@ -35,8 +35,9 @@ void *List_shift(List *list);
 void *List_remove(List *list, ListNode *node);
 
 List *List_copy(List *list);
-List *List_join(List *left, List *right);
-void List_split(List *list, ListNode *splitter, List **left, List **right);
+void List_join(List *left, List *right);
+void List_split(List *list, ListNode *splitter, List **remainder, int recount);
+void List_swap(List *list, ListNode *a, ListNode *b);
 
 // L - List to enumerate
 // S - Which end of the list to start at (first, last)

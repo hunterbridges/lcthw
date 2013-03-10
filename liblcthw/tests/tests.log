@@ -1,19 +1,26 @@
-DEBUG tests/list_tests.c:196: ----- RUNNING: ./tests/list_tests
-DEBUG tests/list_tests.c:183: 
+DEBUG tests/list_algos_tests.c:88: ----- RUNNING: ./tests/list_algos_tests
+DEBUG tests/list_algos_tests.c:82: 
+----- test_bubble_sort
+DEBUG tests/list_algos_tests.c:83: 
+----- test_merge_sort
+DEBUG tests/list_tests.c:250: ----- RUNNING: ./tests/list_tests
+DEBUG tests/list_tests.c:236: 
 ----- test_create
-DEBUG tests/list_tests.c:184: 
+DEBUG tests/list_tests.c:237: 
 ----- test_push_pop
-DEBUG tests/list_tests.c:185: 
+DEBUG tests/list_tests.c:238: 
 ----- test_unshift
-DEBUG tests/list_tests.c:186: 
+DEBUG tests/list_tests.c:239: 
 ----- test_remove
-DEBUG tests/list_tests.c:187: 
+DEBUG tests/list_tests.c:240: 
 ----- test_shift
-DEBUG tests/list_tests.c:188: 
+DEBUG tests/list_tests.c:241: 
 ----- test_destroy
-DEBUG tests/list_tests.c:189: 
+DEBUG tests/list_tests.c:242: 
 ----- test_join
-DEBUG tests/list_tests.c:190: 
+DEBUG tests/list_tests.c:243: 
 ----- test_split
-DEBUG tests/list_tests.c:191: 
+DEBUG tests/list_tests.c:244: 
+----- test_swap
+DEBUG tests/list_tests.c:245: 
 ----- test_copy

@@ -140,47 +140,64 @@ error:
     return result;
 }
 
-List *List_join(List *left, List *right) {
+void List_join(List *left, List *right) {
     assert(left != NULL);
     assert(right != NULL);
-    List *joined = List_create();
 
-    {
-        LIST_FOREACH(left, first, next, cur) {
-            List_push(joined, cur->value);
-        }
-    }
+    ListNode *l_last = left->last;
+    ListNode *r_first = right->first;
+    ListNode *r_last = right->last;
 
-    {
-        LIST_FOREACH(right, first, next, cur) {
-            List_push(joined, cur->value);
-        }
-    }
-
-    return joined;
+    if (l_last) l_last->next = r_first;
+    if (r_first) r_first->prev = l_last;
+    left->last = r_last ? r_last : l_last;
+    left->count += right->count;
 }
 
-void List_split(List *list, ListNode *splitter, List **left, List **right) {
+void List_split(List *list, ListNode *splitter, List **remainder, int recount) {
     assert(list != NULL);
     assert(splitter != NULL);
 
-    int split = 0;
-    LIST_FOREACH(list, first, next, cur) {
-        List **target = (split == 0 ? left : right);
-        if (*target == NULL) {
-            *target = List_create();
-        }
-        List_push(*target, cur->value);
-        if (cur == splitter) split = 1;
+    *remainder = NULL;
+    if (splitter->next == NULL) return;
+    ListNode *prev_last = list->last;
+    list->last = splitter;
+
+    *remainder = List_create();
+    (*remainder)->first = splitter->next;
+    (*remainder)->last = prev_last;
+
+    if ((*remainder)->first) (*remainder)->first->prev = NULL;
+    splitter->next = NULL;
+
+    if (recount == 0) return;
+    int count = 0;
+    for (ListNode *node = (*remainder)->first; node != NULL;
+            node = node->next) {
+        count++;
     }
+    (*remainder)->count = count;
+    list->count -= count;
+}
+
+void List_swap(List *list, ListNode *a, ListNode *b) {
+    assert(list != NULL);
+    assert(a != NULL);
+    assert(b != NULL);
+
+    void *tmp = a->value;
+    a->value = b->value;
+    b->value = tmp;
 }
 
 List *List_copy(List *list) {
     assert(list != NULL);
 
     List *copied = List_create();
+    int i = 0;
     LIST_FOREACH(list, first, next, cur) {
         List_push(copied, cur->value);
+        i++;
     }
 
     return copied;

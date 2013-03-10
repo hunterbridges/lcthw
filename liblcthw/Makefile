@@ -29,9 +29,6 @@ build:
 	@mkdir -p build
 	@mkdir -p bin
 
-$(TESTS): $(SO_TARGET)
-	cc $(CFLAGS) $(LIBS) -o $@ $(TEST_SRC)
-
 # The Unit Tests
 .PHONY: tests
 tests: CFLAGS += $(TARGET)
