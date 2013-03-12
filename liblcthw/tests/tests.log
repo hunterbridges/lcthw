@@ -15,6 +15,16 @@ DEBUG tests/d_array_tests.c:119:
 ----- test_push_pop
 DEBUG tests/d_array_tests.c:120: 
 ----- test_destroy
+DEBUG tests/darray_algos_tests.c:76: ----- RUNNING: ./tests/darray_algos_tests
+DEBUG tests/darray_algos_tests.c:69: 
+----- test_qsort
+DEBUG tests/darray_algos_tests.c:40: --- Testing qsort sorting algorithm
+DEBUG tests/darray_algos_tests.c:70: 
+----- test_heapsort
+DEBUG tests/darray_algos_tests.c:40: --- Testing heapsort sorting algorithm
+DEBUG tests/darray_algos_tests.c:71: 
+----- test_mergesort
+DEBUG tests/darray_algos_tests.c:40: --- Testing mergesort sorting algorithm
 DEBUG tests/list_algos_tests.c:88: ----- RUNNING: ./tests/list_algos_tests
 DEBUG tests/list_algos_tests.c:82: 
 ----- test_bubble_sort
