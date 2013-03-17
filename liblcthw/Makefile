@@ -13,6 +13,7 @@ SO_TARGET=$(patsubst %.a,%.so,$(TARGET))
 
 # The target build
 all: $(TARGET) $(SO_TARGET) tests
+	sh ./make_header.sh
 
 dev: CFLAGS=-g -Wall -Isrc -Wall -Wextra $(OPTFLAGS)
 dev: all
